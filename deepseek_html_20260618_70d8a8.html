@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORTEXY · AI</title>
+  <!-- Font & Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f6f9fc; /* soft Gemini-like background */
+      color: #1e293b;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* main app container */
+    .app {
+      width: 100%;
+      max-width: 1440px;
+      height: 100vh;
+      max-height: 900px;
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      overflow: hidden;
+      margin: 16px;
+      backdrop-filter: blur(2px);
+      transition: all 0.2s;
+    }
+
+    /* ---------- SIDEBAR (history + nav) ---------- */
+    .sidebar {
+      width: 280px;
+      background: #f8fafc;
+      border-right: 1px solid #e9edf2;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      flex-shrink: 0;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      padding-left: 4px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(145deg, #6366f1, #8b5cf6);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 20px;
+      box-shadow: 0 8px 16px -6px rgba(99, 102, 241, 0.3);
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.4px;
+      color: #0f172a;
+    }
+    .logo-text span {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .new-chat-btn {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 40px;
+      padding: 12px 18px;
+      font-weight: 500;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #1e293b;
+      transition: all 0.15s;
+      cursor: default;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .new-chat-btn i {
+      color: #6366f1;
+      font-size: 18px;
+    }
+    .new-chat-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .history-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      letter-spacing: 0.3px;
+      margin-bottom: 16px;
+      padding-left: 6px;
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .history-item {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: 0.1s;
+      cursor: default;
+      font-weight: 450;
+    }
+    .history-item i {
+      color: #94a3b8;
+      font-size: 14px;
+      width: 18px;
+    }
+    .history-item:hover {
+      background: #eef2f6;
+    }
+    .history-item.active {
+      background: #e0e7ff;
+      color: #4338ca;
+    }
+    .history-item.active i {
+      color: #6366f1;
+    }
+
+    .sidebar-footer {
+      margin-top: 20px;
+      border-top: 1px solid #e9edf2;
+      padding-top: 20px;
+    }
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 6px;
+      border-radius: 40px;
+      transition: 0.1s;
+      cursor: default;
+    }
+    .user-card:hover {
+      background: #f1f5f9;
+    }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(145deg, #818cf8, #a78bfa);
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .user-info {
+      flex: 1;
+    }
+    .user-name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .user-email {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .logout-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 18px;
+      cursor: default;
+      padding: 6px 8px;
+      border-radius: 30px;
+      transition: 0.1s;
+    }
+    .logout-btn:hover {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    /* ---------- MAIN CHAT AREA ---------- */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      position: relative;
+    }
+
+    /* header */
+    .chat-header {
+      padding: 16px 28px;
+      border-bottom: 1px solid #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+    }
+    .chat-header h2 {
+      font-weight: 600;
+      font-size: 18px;
+      color: #0f172a;
+    }
+    .header-actions {
+      display: flex;
+      gap: 16px;
+      color: #64748b;
+    }
+    .header-actions i {
+      font-size: 18px;
+      cursor: default;
+      transition: 0.1s;
+      padding: 6px;
+      border-radius: 30px;
+    }
+    .header-actions i:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    /* messages */
+    .chat-messages {
+      flex: 1;
+      padding: 28px 28px 12px 28px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      background: #fafcff;
+    }
+
+    .message {
+      display: flex;
+      gap: 16px;
+      max-width: 85%;
+      animation: fadeIn 0.25s ease;
+    }
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+    .message-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 40px;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+      font-weight: 600;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .message.user .message-avatar {
+      background: #6366f1;
+      color: white;
+    }
+    .message-bubble {
+      background: #f1f4f9;
+      padding: 14px 20px;
+      border-radius: 20px;
+      border-bottom-left-radius: 6px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #0f172a;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .message.user .message-bubble {
+      background: #e0e7ff;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 6px;
+      color: #0f172a;
+    }
+    .message-bubble p {
+      margin-bottom: 6px;
+    }
+    .message-bubble .timestamp {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 8px;
+      display: block;
+      text-align: right;
+    }
+
+    /* input area */
+    .chat-input-area {
+      padding: 16px 28px 28px 28px;
+      background: white;
+      border-top: 1px solid #f0f2f5;
+    }
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 60px;
+      padding: 6px 6px 6px 22px;
+      border: 1px solid #e9edf2;
+      transition: 0.15s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+    .input-wrapper:focus-within {
+      border-color: #818cf8;
+      background: white;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+    }
+    .input-wrapper input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 14px 0;
+      font-size: 15px;
+      outline: none;
+      color: #0f172a;
+    }
+    .input-wrapper input::placeholder {
+      color: #94a3b8;
+    }
+    .input-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .input-actions i {
+      font-size: 20px;
+      color: #94a3b8;
+      padding: 8px;
+      border-radius: 40px;
+      transition: 0.1s;
+      cursor: default;
+    }
+    .input-actions i:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .send-btn {
+      background: #6366f1;
+      border: none;
+      color: white;
+      width: 46px;
+      height: 46px;
+      border-radius: 40px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.15s;
+      cursor: default;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    .send-btn i {
+      color: white;
+    }
+    .send-btn:hover {
+      background: #4f46e5;
+      transform: scale(0.96);
+    }
+
+    /* auth cards (overlay) */
+    .auth-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      border-radius: 32px;
+    }
+    .auth-card {
+      background: white;
+      border-radius: 32px;
+      padding: 40px 44px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 30px 60px -20px rgba(0,0,0,0.2);
+      border: 1px solid #f0f2f5;
+    }
+    .auth-card h3 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+    .auth-card p.sub {
+      color: #64748b;
+      margin-bottom: 24px;
+      font-size: 15px;
+    }
+    .auth-card label {
+      font-weight: 500;
+      font-size: 14px;
+      color: #1e293b;
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 6px;
+    }
+    .auth-card input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1px solid #e2e8f0;
+      border-radius: 40px;
+      font-size: 15px;
+      background: #fafcff;
+      transition: 0.1s;
+      outline: none;
+    }
+    .auth-card input:focus {
+      border-color: #818cf8;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .auth-btn {
+      width: 100%;
+      background: #6366f1;
+      border: none;
+      color: white;
+      padding: 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 16px;
+      margin-top: 24px;
+      transition: 0.1s;
+      cursor: default;
+    }
+    .auth-btn:hover {
+      background: #4f46e5;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #64748b;
+      font-size: 14px;
+    }
+    .auth-footer a {
+      color: #6366f1;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 12px;
+    }
+    .flex-row .auth-btn {
+      margin-top: 8px;
+    }
+
+    /* hide auth by default – we show login */
+    .auth-overlay.hidden {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0.4; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* responsive */
+    @media (max-width: 900px) {
+      .app { max-height: none; border-radius: 24px; margin: 8px; }
+      .sidebar { width: 220px; padding: 16px; }
+    }
+    @media (max-width: 700px) {
+      .app { flex-direction: column; border-radius: 20px; max-height: 100vh; }
+      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e9edf2; flex-direction: row; flex-wrap: wrap; padding: 16px; gap: 8px; align-items: center; }
+      .logo-area { margin-bottom: 0; }
+      .new-chat-btn { margin-bottom: 0; padding: 8px 16px; }
+      .history-list { display: none; }
+      .sidebar-footer { margin-top: 0; border-top: none; padding-top: 0; margin-left: auto; }
+      .auth-card { padding: 28px 24px; margin: 12px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR with history & user -->
+  <aside class="sidebar">
+    <div class="logo-area">
+      <div class="logo-icon">C</div>
+      <div class="logo-text"><span>CORTEXY</span></div>
+    </div>
+    <div class="new-chat-btn"><i class="fas fa-plus-circle"></i> New chat</div>
+    <div class="history-label"><i class="far fa-clock" style="margin-right: 8px;"></i> History</div>
+    <div class="history-list">
+      <div class="history-item active"><i class="fas fa-comment-dots"></i> UI design system</div>
+      <div class="history-item"><i class="fas fa-comment-dots"></i> Python async tips</div>
+      <div class="history-item"><i class="fas fa-comment-dots"></i> React state patterns</div>
+      <div class="history-item"><i class="fas fa-comment-dots"></i> Gemini API overview</div>
+      <div class="history-item"><i class="fas fa-comment-dots"></i> Cloud architecture</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar">JD</div>
+        <div class="user-info">
+          <div class="user-name">James D.</div>
+          <div class="user-email">james@cortexy.ai</div>
+        </div>
+        <div class="logout-btn"><i class="fas fa-sign-out-alt"></i></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CHAT -->
+  <section class="main">
+    <!-- header -->
+    <div class="chat-header">
+      <h2><i class="fas fa-robot" style="color: #6366f1; margin-right: 8px;"></i> CORTEXY chat</h2>
+      <div class="header-actions">
+        <i class="fas fa-search"></i>
+        <i class="fas fa-ellipsis-v"></i>
+      </div>
+    </div>
+
+    <!-- messages -->
+    <div class="chat-messages">
+      <div class="message">
+        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+        <div class="message-bubble">
+          <p>Hello! I'm CORTEXY, your AI assistant. How can I help you today?</p>
+          <span class="timestamp">10:28 AM</span>
+        </div>
+      </div>
+      <div class="message user">
+        <div class="message-avatar">JD</div>
+        <div class="message-bubble">
+          <p>Can you explain the NLP system behind you?</p>
+          <span class="timestamp">10:30 AM</span>
+        </div>
+      </div>
+      <div class="message">
+        <div class="message-avatar"><i class="fas fa-robot"></i></div>
+        <div class="message-bubble">
+          <p>Certainly! CORTEXY uses a hybrid transformer architecture with a proprietary attention mechanism. We combine Gemini-style multi-modal understanding with ChatGPT-like conversational memory. Our NLP pipeline includes tokenization, entity recognition, and contextual reasoning.</p>
+          <span class="timestamp">10:31 AM</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- input -->
+    <div class="chat-input-area">
+      <div class="input-wrapper">
+        <input type="text" placeholder="Ask CORTEXY anything..." value="Show me the auth pages">
+        <div class="input-actions">
+          <i class="fas fa-paperclip"></i>
+          <i class="fas fa-microphone"></i>
+          <button class="send-btn"><i class="fas fa-arrow-up"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTH OVERLAY (login shown as default) -->
+    <div class="auth-overlay" id="authOverlay">
+      <div class="auth-card" id="authCard">
+        <!-- dynamic content via JS -->
+        <div id="authDynamic">
+          <h3>Welcome back</h3>
+          <p class="sub">Log in to your CORTEXY account</p>
+          <label>Email</label>
+          <input type="email" placeholder="hello@cortexy.ai" value="james@cortexy.ai">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" value="password123">
+          <div style="text-align: right; margin-top: 8px;">
+            <a href="#" id="forgotLink" style="font-size: 14px; color: #6366f1; text-decoration: none;">Forgot password?</a>
+          </div>
+          <button class="auth-btn" id="loginBtn">Log in</button>
+          <div class="auth-footer">
+            Don't have an account? <a href="#" id="showRegister">Register</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  (function() {
+    // DOM refs
+    const authOverlay = document.getElementById('authOverlay');
+    const authDynamic = document.getElementById('authDynamic');
+    const authCard = document.getElementById('authCard');
+
+    // simple state: 'login' , 'register', 'forgot', 'reset', 'verify', 'profile'
+    let currentAuth = 'login';
+
+    function renderAuthPage(page) {
+      let html = '';
+      if (page === 'login') {
+        html = `
+          <h3>Welcome back</h3>
+          <p class="sub">Log in to your CORTEXY account</p>
+          <label>Email</label>
+          <input type="email" placeholder="hello@cortexy.ai" value="james@cortexy.ai">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" value="password123">
+          <div style="text-align: right; margin-top: 8px;">
+            <a href="#" id="forgotLink" style="font-size: 14px; color: #6366f1; text-decoration: none;">Forgot password?</a>
+          </div>
+          <button class="auth-btn" id="loginBtn">Log in</button>
+          <div class="auth-footer">
+            Don't have an account? <a href="#" id="showRegister">Register</a>
+          </div>
+        `;
+      } else if (page === 'register') {
+        html = `
+          <h3>Create account</h3>
+          <p class="sub">Join CORTEXY and start chatting</p>
+          <label>Full name</label>
+          <input type="text" placeholder="James Doe" value="James Doe">
+          <label>Email</label>
+          <input type="email" placeholder="hello@cortexy.ai" value="james@cortexy.ai">
+          <label>Password</label>
+          <input type="password" placeholder="Create a strong password" value="password123">
+          <button class="auth-btn">Register</button>
+          <div class="auth-footer">
+            Already have an account? <a href="#" id="showLogin">Log in</a>
+          </div>
+        `;
+      } else if (page === 'forgot') {
+        html = `
+          <h3>Reset password</h3>
+          <p class="sub">We'll send you a reset link</p>
+          <label>Email</label>
+          <input type="email" placeholder="hello@cortexy.ai" value="james@cortexy.ai">
+          <button class="auth-btn">Send reset link</button>
+          <div class="auth-footer">
+            <a href="#" id="backToLogin">← Back to login</a>
+          </div>
+        `;
+      } else if (page === 'reset') {
+        html = `
+          <h3>Set new password</h3>
+          <p class="sub">Choose a strong password</p>
+          <label>New password</label>
+          <input type="password" placeholder="••••••••" value="password123">
+          <label>Confirm password</label>
+          <input type="password" placeholder="••••••••" value="password123">
+          <button class="auth-btn">Reset password</button>
+          <div class="auth-footer">
+            <a href="#" id="backToLogin">← Back to login</a>
+          </div>
+        `;
+      } else if (page === 'verify') {
+        html = `
+          <h3>Check your email</h3>
+          <p class="sub">We sent a verification link to <strong>james@cortexy.ai</strong></p>
+          <div style="background: #e0e7ff; padding: 20px; border-radius: 20px; text-align: center; margin: 20px 0;">
+            <i class="fas fa-envelope" style="font-size: 38px; color: #6366f1;"></i>
+          </div>
+          <button class="auth-btn">Resend email</button>
+          <div class="auth-footer">
+            <a href="#" id="backToLogin">← Back to login</a>
+          </div>
+        `;
+      } else if (page === 'profile') {
+        html = `
+          <h3>Your profile</h3>
+          <p class="sub">Manage your CORTEXY account</p>
+          <div style="display: flex; gap: 16px; align-items: center; margin: 16px 0;">
+            <div style="width: 64px; height: 64px; background: linear-gradient(145deg, #818cf8, #a78bfa); border-radius: 40px; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: 600;">JD</div>
+            <div><strong>James Doe</strong><br><span style="color: #64748b;">james@cortexy.ai</span></div>
+          </div>
+          <label>Full name</label>
+          <input type="text" value="James Doe">
+          <label>Email</label>
+          <input type="email" value="james@cortexy.ai">
+          <div class="flex-row">
+            <button class="auth-btn" style="background: #e2e8f0; color: #1e293b;">Cancel</button>
+            <button class="auth-btn">Save changes</button>
+          </div>
+          <div class="auth-footer" style="margin-top: 16px;">
+            <a href="#" id="logoutFromProfile" style="color: #b91c1c;">Log out</a> · 
+            <a href="#" id="backToLogin">Back</a>
+          </div>
+        `;
+      }
+      authDynamic.innerHTML = html;
+      // re-bind events
+      attachEvents();
+    }
+
+    function attachEvents() {
+      // showRegister
+      const regLink = document.getElementById('showRegister');
+      if (regLink) regLink.addEventListener('click', (e) => { e.preventDefault(); currentAuth = 'register'; renderAuthPage('register'); });
+
+      const loginLink = document.getElementById('showLogin');
+      if (loginLink) loginLink.addEventListener('click', (e) => { e.preventDefault(); currentAuth = 'login'; renderAuthPage('login'); });
+
+      const forgotLink = document.getElementById('forgotLink');
+      if (forgotLink) forgotLink.addEventListener('click', (e) => { e.preventDefault(); currentAuth = 'forgot'; renderAuthPage('forgot'); });
+
+      const backToLogin = document.getElementById('backToLogin');
+      if (backToLogin) backToLogin.addEventListener('click', (e) => { e.preventDefault(); currentAuth = 'login'; renderAuthPage('login'); });
+
+      const logoutBtn = document.getElementById('logoutFromProfile');
+      if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); currentAuth = 'login'; renderAuthPage('login'); });
+
+      // login btn -> profile demo
+      const loginBtn = document.getElementById('loginBtn');
+      if (loginBtn) loginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentAuth = 'profile';
+        renderAuthPage('profile');
+      });
+
+      // register btn -> verification demo
+      const registerBtn = document.querySelector('.auth-card .auth-btn');
+      if (registerBtn && currentAuth === 'register') {
+        registerBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          currentAuth = 'verify';
+          renderAuthPage('verify');
+        });
+      }
+      // forgot -> reset demo
+      const forgotSubmit = document.querySelector('.auth-card .auth-btn');
+      if (forgotSubmit && currentAuth === 'forgot') {
+        forgotSubmit.addEventListener('click', (e) => {
+          e.preventDefault();
+          currentAuth = 'reset';
+          renderAuthPage('reset');
+        });
+      }
+      // reset -> login
+      const resetBtn = document.querySelector('.auth-card .auth-btn');
+      if (resetBtn && currentAuth === 'reset') {
+        resetBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          currentAuth = 'login';
+          renderAuthPage('login');
+        });
+      }
+      // verify -> login
+      const verifyBtn = document.querySelector('.auth-card .auth-btn');
+      if (verifyBtn && currentAuth === 'verify') {
+        verifyBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          currentAuth = 'login';
+          renderAuthPage('login');
+        });
+      }
+    }
+
+    // initial render: login
+    renderAuthPage('login');
+
+    // optional: click on logout in sidebar -> show login
+    document.querySelector('.logout-btn')?.addEventListener('click', function(e) {
+      e.preventDefault();
+      currentAuth = 'login';
+      renderAuthPage('login');
+    });
+
+    // click on "New chat" or history items -> just for demo, no overlay
+    document.querySelector('.new-chat-btn')?.addEventListener('click', function() {
+      // just a demo interaction
+    });
+
+    // send button demo: add a dummy message
+    document.querySelector('.send-btn')?.addEventListener('click', function() {
+      const messages = document.querySelector('.chat-messages');
+      const dummy = document.createElement('div');
+      dummy.className = 'message user';
+      dummy.innerHTML = `<div class="message-avatar">JD</div><div class="message-bubble"><p>I love the UI! It feels like Gemini + ChatGPT.</p><span class="timestamp">Just now</span></div>`;
+      messages.appendChild(dummy);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+  })();
+</script>
+</body>
+</html>
